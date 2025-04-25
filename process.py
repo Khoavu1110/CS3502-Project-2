@@ -22,4 +22,5 @@ class Process:
         self.turnaroundTime = None
 
     def __repr__(self):
-        return f"Process(pid={self.pid}, AT={self.arrivalTime}, BT={self.burstTime}, PR={self.priority})"
+        return (f"Process(pid={self.pid}, AT={self.arrivalTime}, BT={self.burstTime}, PR={self.priority}, "
+                f"ST={self.startTime}, CT={self.completionTime}, WT={self.waitingTime}, TAT={self.turnaroundTime})")
