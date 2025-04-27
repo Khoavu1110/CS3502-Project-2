@@ -143,6 +143,29 @@ def simulateSJF(processes):
     return processes
 
 
+'''
+CPU Utilization = (Total CPU Busy Time / Total Time) × 100
+'''
+def calculateCPUUtilization(processes):
+    CPUUtilization = 0
+    totalCPUBusyTime = 0
+    for process in processes:
+        totalCPUBusyTime = totalCPUBusyTime + process.burstTime
+    totalTime = max(process.completionTime for process in processes)
+
+    CPUUtilization = float((totalCPUBusyTime / totalTime) *100)
+    return CPUUtilization
+
+
+
+'''
+Throughput = Total number of processes completed / total time taken
+'''
+def calculateThroughput(processes):
+    totalTime = max(process.completionTime for process in processes)
+    return len(processes)/totalTime
+    
+
 
 def main():
     processNum = 5
@@ -162,24 +185,31 @@ def main():
     FCFS_UpdatedProcesses = simulateFCFS(processes_fcfs)
     FCFS_averageWaitTime = calculateAverageWaitTime(FCFS_UpdatedProcesses)
     FCFS_averageTurnaroundTime = calculateAverageTurnaroundTime(FCFS_UpdatedProcesses)
+    FCFS_CPUUtilization = calculateCPUUtilization(FCFS_UpdatedProcesses)
+    FCFS_Throughput = calculateThroughput(FCFS_UpdatedProcesses)
 
     # Run HRRN simulation
     HRRN_UpdatedProcesses = simulateHRRN(processes_hrrn)
     HRRN_averageWaitTime = calculateAverageWaitTime(HRRN_UpdatedProcesses)
     HRRN_averageTurnaroundTime = calculateAverageTurnaroundTime(HRRN_UpdatedProcesses)
+    HRRN_CPUUtilization = calculateCPUUtilization(HRRN_UpdatedProcesses)
+    HRRN_Throughput = calculateThroughput(HRRN_UpdatedProcesses)
 
     # Run SJF simulation
     SJF_UpdatedProcesses = simulateSJF(processes_sjf)
     SJF_averageWaitTime = calculateAverageWaitTime(SJF_UpdatedProcesses)
     SJF_averageTurnaroundTime = calculateAverageTurnaroundTime(SJF_UpdatedProcesses)
+    SJF_CPUUtilization = calculateCPUUtilization(SJF_UpdatedProcesses)
+    SJF_Throughput = calculateThroughput(SJF_UpdatedProcesses)
 
     # Create table with tabulate
     data = [
-        ["FCFS", FCFS_averageWaitTime, FCFS_averageTurnaroundTime],
-        ["HRRN", HRRN_averageWaitTime, HRRN_averageTurnaroundTime],
-        ["SJF", SJF_averageWaitTime, SJF_averageTurnaroundTime]
+        ["FCFS", FCFS_averageWaitTime, FCFS_averageTurnaroundTime, FCFS_CPUUtilization, FCFS_Throughput],
+        ["HRRN", HRRN_averageWaitTime, HRRN_averageTurnaroundTime, HRRN_CPUUtilization, HRRN_Throughput],
+        ["SJF", SJF_averageWaitTime, SJF_averageTurnaroundTime, SJF_CPUUtilization, SJF_Throughput]
     ]
-    headers = ["Algorithm", "Average Wait Time", "Average Turnaround Time"]
+
+    headers = ["Algorithm", "Avg Wait Time", "Avg Turnaround Time", "CPU Utilization (%)", "Throughput (processes/unit time)"]
     print(tabulate(data, headers=headers, tablefmt="github"))
 
     # Plotting the result
