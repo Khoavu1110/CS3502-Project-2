@@ -20,6 +20,7 @@ class Process:
         self.completionTime = None
         self.waitingTime = None
         self.turnaroundTime = None
+        self.isCompleted = False
 
     def __repr__(self):
         return (f"Process(pid={self.pid}, AT={self.arrivalTime}, BT={self.burstTime}, PR={self.priority}, "

@@ -48,22 +48,68 @@ def calculateAverageTurnaroundTime(processes):
     return (totalTurnaroundTime/len(processes))
 
 
+'''
+Write a simulate_hrrn(processes) function:
+    Initialize current_time = 0
+    While not all processes are completed:
+        Find all ready processes (arrivalTime <= current_time)
+        Calculate response ratio for each ready process: (waitingTime + burstTime) / burstTime
+        Pick the process with the highest response ratio
+        Set startTime
+        Set completionTime
+        Set waitingTime
+        Set turnaroundTime
+        Update current_time to completionTime
+        Mark process as completed
+    Return the updated process list
+'''
+def simulateHRRN(processes):
+    currentTime = 0
+    while not all(process.isCompleted for process in processes):
+        readyProcesses = []
+        highestResponseRatio = -1
+
+        for process in processes:
+            if not process.isCompleted and process.arrivalTime <= currentTime:
+                readyProcesses.append(process)
+                currentProcessResponseRatio = ((currentTime - process.arrivalTime) + process.burstTime) / process.burstTime
+                if currentProcessResponseRatio > highestResponseRatio:
+                    highestResponseRatio = currentProcessResponseRatio
+                    readyProcess = process
+        
+        if highestResponseRatio == -1:
+            nextArrival = min(p.arrivalTime for p in processes if not p.isCompleted)
+            currentTime = nextArrival
+            continue
+
+        readyProcess.startTime = currentTime
+        readyProcess.completionTime = readyProcess.startTime + readyProcess.burstTime
+        readyProcess.turnaroundTime = readyProcess.completionTime - readyProcess.arrivalTime
+        readyProcess.waitingTime = readyProcess.startTime - readyProcess.arrivalTime
+        readyProcess.isCompleted = True
+        currentTime = readyProcess.completionTime
+    return processes
+
 
 def main():
     processNum = 5
     processes = []
     for process in range(processNum):
         processes.append(Process(process+1, randint(0 ,10), randint(1, 10),randint(1,5)))
-    print(processes)
-    print(f"FCFS:  {simulateFCFS(processes)}")
+    print(f"{processes}\n")
+    print(f"FCFS:  {simulateFCFS(processes)}/n")
 
     updated_processes = simulateFCFS(processes)
 
     averageWaitTime = calculateAverageWaitTime(updated_processes)
     averageTurnaroundTime = calculateAverageTurnaroundTime(updated_processes)
 
-    print(f"Average Waiting Time: {averageWaitTime:.2f}")
-    print(f"Average Turnaround Time: {averageTurnaroundTime:.2f}")
+    print(f"Average Waiting Time: {averageWaitTime:.2f}\n")
+    print(f"Average Turnaround Time: {averageTurnaroundTime:.2f}\n")
+
+    updated_processes = simulateHRRN(processes)
+    print(f"HRRN: {updated_processes}\n")
+
 
 
 if __name__ == "__main__":
