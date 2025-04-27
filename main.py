@@ -168,12 +168,13 @@ def calculateThroughput(processes):
 
 
 def main():
-    processNum = 5
+    processNum = 50
     processes = []
 
     # Generate random processes
     for process in range(processNum):
-        processes.append(Process(process+1, randint(0, 10), randint(1, 10), randint(1, 5)))
+        # pid, arrivalTime, burstTime, priority
+        processes.append(Process(process+1, randint(0, 0), randint(1, 10), randint(1, 5)))
     print(f"Original Processes:\n{processes}\n")
 
     # Make deep copies for each algorithm so original data is untouched
