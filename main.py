@@ -143,6 +143,66 @@ def simulateSJF(processes):
     return processes
 
 
+
+'''
+simulateSRTF(processes) function:
+Initialize currentTime = 0
+While not all processes are completed:
+    Find all processes that have arrived (arrivalTime <= current_time) and are not finished.
+    From ready processes, pick the one with the **smallest remaining time**.
+    Run that process for 1 unit of time (simulate small steps!).
+    Decrease its remaining time by 1.
+    If a process finishes (remaining time == 0):
+        Set completionTime, waitingTime, turnaroundTime
+        Mark process as completed
+    Increase current_time by 1
+'''
+def simulateSRTF (processes):
+    currentTime = 0
+    # Initialize remaining time for all processes
+    for process in processes:
+        process.remainingTime = process.burstTime
+
+    while not all (process.isCompleted for process in processes):
+        readyProcesses = []
+        smallestRemainingTime = math.inf
+        selectedProcess = None
+
+        for process in processes:
+            if not process.isCompleted and process.arrivalTime <= currentTime:
+                readyProcesses.append(process)
+                if process.remainingTime < smallestRemainingTime:
+                    smallestRemainingTime = process.remainingTime
+                    selectedProcess = process
+        
+        # If no process is ready
+        if selectedProcess is None:
+            currentTime += 1
+            continue
+
+        # Execute the selected process for 1 unit of time
+        selectedProcess.remainingTime -= 1
+
+        # If the process is finished
+        if selectedProcess.remainingTime == 0:
+            selectedProcess.isCompletd = True
+            selectedProcess.completionTime = currentTime + 1
+            selectedProcess.turnaroundTime = selectedProcess.completionTime - selectedProcess.arrivalTime
+            selectedProcess.waitingTime = selectedProcess.turnaroundTime - selectedProcess.burstTime
+            if selectedProcess.startTime is None:
+                selectedProcess.startTime = currentTime
+
+        # Update time
+        currentTime += 1
+
+    return processes
+                
+
+
+
+    pass
+
+
 '''
 CPU Utilization = (Total CPU Busy Time / Total Time) × 100
 '''
@@ -174,13 +234,17 @@ def main():
     # Generate random processes
     for process in range(processNum):
         # pid, arrivalTime, burstTime, priority
-        processes.append(Process(process+1, randint(0, 0), randint(1, 10), randint(1, 5)))
-    print(f"Original Processes:\n{processes}\n")
+        processes.append(Process(process+1, randint(0, 10), randint(1, 50), randint(1, 5)))
+    # print(f"Original Processes:\n{processes}\n")
+    print("Original Process: ")
+    for process in processes:
+        print(f"{process}\n")
 
     # Make deep copies for each algorithm so original data is untouched
     processes_fcfs = copy.deepcopy(processes)
     processes_hrrn = copy.deepcopy(processes)
     processes_sjf = copy.deepcopy(processes)
+    processes_srtf = copy.deepcopy(processes)
 
     # Run FCFS simulation
     FCFS_UpdatedProcesses = simulateFCFS(processes_fcfs)
@@ -203,20 +267,29 @@ def main():
     SJF_CPUUtilization = calculateCPUUtilization(SJF_UpdatedProcesses)
     SJF_Throughput = calculateThroughput(SJF_UpdatedProcesses)
 
+    # Run SRTF
+    SRTF_UpdatedProcesses = simulateSJF(processes_srtf)
+    SRTF_averageWaitTime = calculateAverageWaitTime(SRTF_UpdatedProcesses)
+    SRTF_averageTurnaroundTime = calculateAverageTurnaroundTime(SRTF_UpdatedProcesses)
+    SRTF_CPUUtilization = calculateCPUUtilization(SRTF_UpdatedProcesses)
+    SRTF_Throughput = calculateThroughput(SRTF_UpdatedProcesses)
+
     # Create table with tabulate
     data = [
         ["FCFS", FCFS_averageWaitTime, FCFS_averageTurnaroundTime, FCFS_CPUUtilization, FCFS_Throughput],
         ["HRRN", HRRN_averageWaitTime, HRRN_averageTurnaroundTime, HRRN_CPUUtilization, HRRN_Throughput],
-        ["SJF", SJF_averageWaitTime, SJF_averageTurnaroundTime, SJF_CPUUtilization, SJF_Throughput]
+        ["SJF", SJF_averageWaitTime, SJF_averageTurnaroundTime, SJF_CPUUtilization, SJF_Throughput],
+        ["SRTF", SRTF_averageWaitTime, SRTF_averageTurnaroundTime, SRTF_CPUUtilization, SRTF_Throughput]
+
     ]
 
     headers = ["Algorithm", "Avg Wait Time", "Avg Turnaround Time", "CPU Utilization (%)", "Throughput (processes/unit time)"]
     print(tabulate(data, headers=headers, tablefmt="github"))
 
     # Plotting the result
-    algorithms = ["FCFS", "HRRN", "SJF"]
-    avgWaitTime = [FCFS_averageWaitTime, HRRN_averageWaitTime, SJF_averageWaitTime]
-    avgTurnaroundTime = [FCFS_averageTurnaroundTime, HRRN_averageTurnaroundTime, SJF_averageTurnaroundTime]
+    algorithms = ["FCFS", "HRRN", "SJF", "SRTF"]
+    avgWaitTime = [FCFS_averageWaitTime, HRRN_averageWaitTime, SJF_averageWaitTime, SRTF_averageWaitTime]
+    avgTurnaroundTime = [FCFS_averageTurnaroundTime, HRRN_averageTurnaroundTime, SJF_averageTurnaroundTime, SRTF_averageTurnaroundTime]
 
     x = range(len(algorithms))
     barWidth = 0.35
@@ -227,7 +300,7 @@ def main():
     # Add labels and title
     plt.xlabel('Scheduling Algorithm')
     plt.ylabel('Time (units)')
-    plt.title('FCFS vs HRRN vs SJF Performance')
+    plt.title('FCFS vs HRRN vs SJF vs SRTF Performance')
     plt.xticks([i + barWidth / 2 for i in x], algorithms)
     plt.legend()
 
